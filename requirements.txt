@@ -1,0 +1,50 @@
+# ==========================================================
+# FinSight AI - Python Dependencies
+# Generated for Python 3.12+
+# ==========================================================
+
+# --- Web Framework ---
+streamlit==1.38.0
+
+# --- Database ---
+SQLAlchemy==2.0.32
+PyMySQL==1.1.1
+mysql-connector-python==9.0.0
+
+# --- Data Handling ---
+pandas==2.2.2
+numpy==1.26.4
+scipy==1.13.1
+openpyxl==3.1.5
+
+# --- Visualization ---
+plotly==5.23.0
+matplotlib==3.9.4
+# --- Machine Learning (foundation only, used in later phases) ---
+scikit-learn==1.5.1
+xgboost==2.1.0
+
+# --- Market Data ---
+yfinance==0.2.41
+
+# --- News & NLP ---
+newsapi-python==0.2.7
+textblob==0.18.0.post0
+nltk==3.8.1
+
+# --- PDF / Reporting ---
+reportlab==4.2.2
+
+# --- Security ---
+bcrypt==4.2.0
+passlib==1.7.4
+
+# --- Configuration & Environment ---
+python-dotenv==1.0.1
+
+# --- Logging ---
+loguru==0.7.2
+
+# --- Utilities ---
+python-dateutil==2.9.0.post0
+pytz==2024.1

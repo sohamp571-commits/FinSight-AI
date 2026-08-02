@@ -1,0 +1,6 @@
+# Trained model artifacts are generated at runtime and can be large;
+# they don't belong in version control. This local .gitignore (new
+# file, not an edit to the project root .gitignore) keeps this
+# directory's structure tracked without committing *.joblib binaries.
+*.joblib
+!.gitignore

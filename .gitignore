@@ -1,0 +1,52 @@
+# ================= Byte-compiled / cache =================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# ================= Virtual Environment =================
+venv/
+env/
+ENV/
+.venv/
+
+# ================= Environment Variables =================
+.env
+.env.local
+.env.*.local
+
+# ================= PyCharm / IDE =================
+.idea/
+*.iml
+.vscode/
+
+# ================= Logs =================
+logs/
+*.log
+
+# ================= Database =================
+*.sqlite3
+*.db
+database/*.sql.bak
+
+# ================= Reports / Generated Files =================
+reports/generated/
+*.pdf
+!docs/**/*.pdf
+
+# ================= OS Files =================
+.DS_Store
+Thumbs.db
+
+# ================= Testing / Coverage =================
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ================= Distribution =================
+build/
+dist/
+*.egg-info/
+
+# ================= Streamlit =================
+.streamlit/secrets.toml
