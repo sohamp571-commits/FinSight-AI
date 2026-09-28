@@ -1,16 +1,4 @@
-"""
-authentication/password_utils.py
 
-Purpose: Authentication-specific wrappers around the generic hashing
-primitives in helper.py, plus the token generation/verification logic
-used by the Forgot Password / Reset Password flow.
-
-Design note: password_reset_tokens.token_hash stores a SHA-256 hash of
-the raw token, never the raw token itself -- the raw token only ever
-exists in the reset-link URL and the user's inbox. This mirrors the
-same "never store the secret in plaintext" principle used for login
-passwords.
-"""
 
 import hashlib
 from datetime import datetime, timedelta

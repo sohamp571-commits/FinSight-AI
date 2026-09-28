@@ -58,7 +58,6 @@ def render_moving_average_panel(df: pd.DataFrame) -> None:
     sma_20 = calculate_sma(close, 20).iloc[-1]
     sma_50 = calculate_sma(close, 50).iloc[-1] if len(close) >= 50 else None
     ema_12 = calculate_ema(close, 12).iloc[-1]
-    ema_26 = calculate_ema(close, 26).iloc[-1] if len(close) >= 26 else None
 
     col1, col2, col3 = st.columns(3)
     with col1:

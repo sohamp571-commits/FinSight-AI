@@ -65,7 +65,6 @@ def get_todays_gain_loss(user_id: int) -> dict[str, float]:
     quotes = get_live_quotes_for_holdings(holdings)
 
     todays_gain_loss = 0.0
-    todays_gain_loss_pct_weighted = 0.0
     total_previous_value = 0.0
 
     for holding in holdings:

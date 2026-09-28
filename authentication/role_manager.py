@@ -1,11 +1,4 @@
-"""
-authentication/role_manager.py
 
-Purpose: Centralizes everything related to the `roles` table and
-role-based access control (RBAC) so that permission logic isn't
-duplicated across every page. `middleware.py` builds its decorators
-on top of the functions defined here.
-"""
 
 from constants import UserRole
 from custom_exceptions import DatabaseQueryError, RecordNotFoundError

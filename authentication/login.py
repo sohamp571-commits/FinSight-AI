@@ -1,10 +1,4 @@
-"""
-authentication/login.py
 
-Purpose: Streamlit page for user login. Presents a username/email +
-password form with a "Remember Me" checkbox, validates credentials via
-AuthService, and starts a session on success.
-"""
 
 from datetime import datetime
 
@@ -19,16 +13,7 @@ from authentication.session_manager import start_session
 
 
 def _apply_page_style() -> None:
-    """
-    Inject the login page's visual styling: a gradient page background,
-    a real glassmorphism card (targeting the auto-generated
-    `.st-key-login_card` class from `st.container(key="login_card")`
-    -- NOT the broken manual `st.markdown('<div>...')` wrapper this
-    previously used, which rendered as an empty floating box because
-    Streamlit doesn't nest later widgets inside a div opened by an
-    earlier, separate `st.markdown()` call), and animated button
-    hover effects.
-    """
+
     st.markdown(
         """
         <style>

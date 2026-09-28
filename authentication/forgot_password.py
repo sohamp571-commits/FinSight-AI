@@ -1,17 +1,11 @@
-"""
-authentication/forgot_password.py
-
-Purpose: Streamlit page where a user requests a password reset link by
-email. Always shows the same generic confirmation message whether or
-not the email exists in the system, to avoid leaking which emails are
-registered (a standard account-enumeration defense).
-"""
 
 import streamlit as st
 
 from custom_exceptions import ValidationError
 from logging_config import logger
 
+from authentication.email_service import EmailService
+from config import config
 from authentication.auth_service import AuthService
 from authentication.middleware import guest_only
 
@@ -36,12 +30,22 @@ def render() -> None:
             st.success(GENERIC_CONFIRMATION)
 
             if raw_token is not None:
-                # NOTE: Phase 1/2 has no email-sending service wired up yet.
-                # In production this token would be emailed, never shown on
-                # screen. It is surfaced here only so the reset flow is
-                # testable end-to-end without an SMTP integration.
-                reset_url = f"?page=reset_password&token={raw_token}"
-                st.info(f"Development mode: reset link -> `{reset_url}`")
+                reset_link = (
+                    f"{config.APP_URL}"
+                    f"/?page=reset_password&token={raw_token}"
+                )
+
+                email_sent = EmailService.send_password_reset_email(
+                    recipient_email=email,
+                    reset_link=reset_link,
+                )
+
+                if email_sent:
+                    st.success("Password reset email sent successfully.")
+                else:
+                    st.error(
+                        "Unable to send reset email. Please contact the administrator."
+                    )
         except ValidationError as exc:
             st.warning(exc.message)
         except Exception as exc:  # noqa: BLE001

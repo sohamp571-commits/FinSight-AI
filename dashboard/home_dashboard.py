@@ -20,6 +20,7 @@ from authentication.session_manager import get_current_full_name, get_current_us
 from custom_exceptions import FinSightBaseException
 from dashboard.chart_helpers import CHART_CONFIG, build_price_line_chart
 from dashboard.dashboard_layout import inject_dashboard_css, render_divider, render_section_header, responsive_columns
+from dashboard.dashboard_widgets import select_stock_and_navigate
 from dashboard.market_data_service import MARKET_INDICES, fetch_price_history, get_market_status
 from database.audit_service import audit_service
 from database.watchlist_service import watchlist_service
@@ -118,7 +119,8 @@ def _render_news_and_trending() -> None:
         if not trending:
             st.caption("No trending data available.")
         for ticker, count in trending:
-            st.markdown(f"• **{ticker}** — {count} article(s)")
+            if st.button(f"{ticker} — {count} article(s)", key=f"home_trending_{ticker}", use_container_width=True):
+                select_stock_and_navigate(ticker)
 
 
 def _render_recent_activity(user_id: int) -> None:

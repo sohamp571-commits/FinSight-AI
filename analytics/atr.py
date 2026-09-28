@@ -1,11 +1,4 @@
-"""
-analytics/atr.py
 
-Purpose: Implements the Average True Range (ATR) -- a volatility (not
-direction) indicator -- using Wilder's smoothing, plus a chart and a
-plain-English volatility-regime read (relative to the ticker's own
-recent history, since ATR has no universal threshold).
-"""
 
 import pandas as pd
 import plotly.graph_objects as go

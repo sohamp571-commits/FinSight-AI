@@ -1,12 +1,4 @@
-"""
-authentication/validators.py
 
-Purpose: Field-level validation rules specific to the authentication
-module (email, username, password strength, full name). Reuses the
-generic regex/utility building blocks from utils.py where possible,
-and raises custom_exceptions.ValidationError with a user-facing
-message on failure so the Streamlit UI can display it directly.
-"""
 
 import re
 

@@ -116,6 +116,52 @@ def build_volume_bar_chart(history: pd.DataFrame, title: str = "Volume") -> go.F
     return apply_dark_theme(fig, height=220)
 
 
+def build_return_histogram(returns: pd.Series, title: str = "Daily Return Distribution") -> go.Figure:
+    """
+    Build an interactive histogram of daily returns with mean and
+    median reference lines, for the Statistical Analysis ->
+    Descriptive Statistics tab.
+    """
+    fig = go.Figure(
+        go.Histogram(
+            x=returns,
+            marker_color=COLOR_ACCENT,
+            opacity=0.85,
+            name="Daily Return",
+        )
+    )
+
+    mean_value = float(returns.mean())
+    median_value = float(returns.median())
+    fig.add_vline(x=mean_value, line_width=2, line_dash="dash", line_color=COLOR_POSITIVE,
+                   annotation_text="Mean", annotation_position="top")
+    fig.add_vline(x=median_value, line_width=2, line_dash="dot", line_color=COLOR_NEUTRAL,
+                   annotation_text="Median", annotation_position="bottom")
+
+    fig.update_layout(title=title, xaxis_title="Daily Return", yaxis_title="Frequency")
+    fig.update_xaxes(tickformat=".2%")
+    return apply_dark_theme(fig, height=380, show_legend=False)
+
+
+def build_return_box_plot(returns: pd.Series, title: str = "Daily Return Box Plot") -> go.Figure:
+    """
+    Build an interactive box plot of daily returns (median, Q1/Q3,
+    whiskers, and outlier points), for the Statistical Analysis ->
+    Descriptive Statistics tab.
+    """
+    fig = go.Figure(
+        go.Box(
+            y=returns,
+            name="Daily Return",
+            marker_color=COLOR_ACCENT,
+            boxpoints="outliers",
+        )
+    )
+    fig.update_layout(title=title, yaxis_title="Daily Return")
+    fig.update_yaxes(tickformat=".2%")
+    return apply_dark_theme(fig, height=380, show_legend=False)
+
+
 def build_market_heatmap(rows: list[dict[str, Any]]) -> go.Figure:
     """
     Build a Yahoo-Finance-style treemap heatmap: tile size = |change %|

@@ -9,7 +9,6 @@ beyond what's already in the project.
 """
 
 from dataclasses import dataclass
-from typing import Any
 
 from portfolio.portfolio_calculator import compute_holding_weights
 from portfolio.portfolio_service import get_portfolio_summary_live

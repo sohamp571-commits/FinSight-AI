@@ -1,13 +1,4 @@
-"""
-machine_learning/cross_validation.py
 
-Purpose: Runs time-series-aware cross-validation using scikit-learn's
-`TimeSeriesSplit` (expanding-window folds that always train on the
-past and validate on the future) rather than standard k-fold, which
-would leak future information into training exactly like a random
-train/test split would. Used to sanity-check a model's stability
-across multiple periods before it's trusted for forecasting.
-"""
 
 from dataclasses import dataclass
 

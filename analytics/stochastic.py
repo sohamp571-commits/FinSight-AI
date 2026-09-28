@@ -1,10 +1,4 @@
-"""
-analytics/stochastic.py
 
-Purpose: Implements the Stochastic Oscillator (%K and its %D signal
-line) plus a dedicated Plotly panel with overbought (80) / oversold
-(20) reference lines and a derived BUY/SELL/NEUTRAL signal.
-"""
 
 import pandas as pd
 import plotly.graph_objects as go

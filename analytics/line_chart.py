@@ -1,11 +1,4 @@
-"""
-analytics/line_chart.py
 
-Purpose: Builds an interactive line chart of a selectable OHLC field
-(Close/Open/High/Low) with an optional moving-average overlay --
-a simpler alternative view to the candlestick chart, useful for
-multi-timeframe comparison and cleaner trend reading.
-"""
 
 import pandas as pd
 import plotly.graph_objects as go

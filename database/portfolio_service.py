@@ -1,17 +1,3 @@
-"""
-database/portfolio_service.py
-
-Purpose: Data-layer service for the `portfolio` table -- a user's
-current stock holdings (as opposed to `transactions`, which is the
-historical buy/sell ledger). Provides average-cost-basis math for
-adding/removing shares and simple valuation summaries.
-
-Note: Live market prices are not available yet (that lands with the
-`stock_search` / `analytics` modules in a later phase), so
-`portfolio_summary()` accepts an optional `current_prices` dict so
-callers can plug in live prices once that service exists, and falls
-back to cost-basis valuation when prices aren't supplied.
-"""
 
 from typing import Any
 

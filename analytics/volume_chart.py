@@ -1,12 +1,4 @@
-"""
-analytics/volume_chart.py
 
-Purpose: Builds the Volume Analysis chart -- volume bars colored by
-daily direction (reusing the same convention as
-`dashboard.chart_helpers.build_volume_bar_chart`) plus a volume
-moving-average overlay line, so unusually high/low volume relative to
-the recent average is immediately visible.
-"""
 
 import pandas as pd
 import plotly.graph_objects as go

@@ -1,11 +1,3 @@
-"""
-database/prediction_service.py
-
-Purpose: Data-layer service for the `prediction_history` table.
-Records outputs of the ML prediction module (Phase 5+) so they can be
-reviewed later; this phase only provides the storage/query layer, not
-the modeling itself.
-"""
 
 from typing import Any
 

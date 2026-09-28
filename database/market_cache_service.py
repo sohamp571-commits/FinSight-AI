@@ -1,12 +1,4 @@
-"""
-database/market_cache_service.py
 
-Purpose: Data-layer service for the `market_cache` table -- stores
-daily OHLCV (open/high/low/close/volume) bars fetched from yfinance,
-so repeated chart/analytics requests don't repeatedly hit the external
-API for the same historical day. Upserts on (ticker_symbol, data_date)
-per the table's unique constraint.
-"""
 
 from datetime import datetime
 from typing import Any

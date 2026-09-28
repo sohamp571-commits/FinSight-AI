@@ -1,13 +1,4 @@
-"""
-analytics/signal_generator.py
 
-Purpose: Aggregates the individual BUY/SELL/NEUTRAL signals produced
-by rsi.py, macd.py, bollinger_bands.py, stochastic.py, and
-moving_average.py -- plus trend_analysis.py's strength read and
-volume_chart.py's volume read -- into one consolidated recommendation
-and an "Indicator Summary" table, exactly matching the Phase 6 Signals
-requirement (Buy/Sell/Neutral Signal, Indicator Summary, Trend Strength).
-"""
 
 import pandas as pd
 import streamlit as st

@@ -1,12 +1,4 @@
-"""
-analytics/technical_indicators.py
 
-Purpose: A facade over every indicator module -- computes SMA/EMA/WMA,
-RSI, MACD, Bollinger Bands, ATR, ADX, and Stochastic in one call and
-returns their latest values as a flat dict. Used by
-technical_analysis.py to render a single "All Indicators" reference
-table without every page needing to import ten modules individually.
-"""
 
 import pandas as pd
 import streamlit as st

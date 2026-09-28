@@ -1,25 +1,4 @@
-"""
-database/init_db.py
 
-Purpose: One-shot initialization script that gets a fresh MySQL
-instance ready to run FinSight AI. Run this once per environment
-(local dev, staging, ...) after configuring `.env`.
-
-Steps performed:
-    1. Create the target database if it doesn't already exist.
-    2. Verify connectivity through the normal application engine.
-    3. Create every table defined in database/models.py.
-    4. Seed the default roles (admin, analyst, user).
-    5. Create a default admin account (idempotent -- skipped if one
-       already exists).
-    6. Print a human-readable summary.
-
-Run with:  python database/init_db.py
-(Run from the project root so relative imports resolve correctly --
- PyCharm's default "Run" configuration does this automatically when
- init_db.py is set as the script and the project root is the working
- directory.)
-"""
 
 import sys
 from pathlib import Path
@@ -42,11 +21,7 @@ from logging_config import logger  # noqa: E402
 
 def create_database_if_missing() -> None:
     """
-    Connect to the MySQL server WITHOUT selecting a database (since
-    the target database may not exist yet) and issue CREATE DATABASE
-    IF NOT EXISTS. Uses PyMySQL directly rather than SQLAlchemy's
-    engine, because the engine's connection string always targets a
-    specific database name.
+    Connect to the MySQL server WITHOUT selecting a database
     """
     logger.info(f"Ensuring database '{config.DB_NAME}' exists...")
     try:
@@ -88,10 +63,7 @@ def verify_connection() -> None:
 def create_tables() -> None:
     """
     Create every table defined by the SQLAlchemy models in
-    database/models.py. This is the portable, PyCharm-friendly path
-    for local development; database/schema.sql remains available as
-    the fully-specified DDL reference (exact ENUM types, etc.) for
-    manual execution in MySQL Workbench or a DBA review.
+    models.py.
     """
     from database.connection import db_connection
     from database.models import Base

@@ -50,7 +50,16 @@ def _render_search_bar(user_id: int) -> str | None:
     Render the search input with live autocomplete suggestions.
     Returns the resolved ticker to analyze, or None if nothing has
     been searched yet this render.
+
+    If a ticker was selected elsewhere in the app (Dashboard movers,
+    Watchlist, Portfolio, AI recommendations, Trending Stocks -- any
+    caller that sets `st.session_state["selected_stock"]`), it's
+    consumed here and pre-fills the search box automatically, so the
+    user isn't asked to type it again.
     """
+    if "selected_stock" in st.session_state:
+        st.session_state["stock_search_query"] = st.session_state.pop("selected_stock")
+
     query = st.text_input(
         "🔍 Search by company name, NSE symbol, or BSE symbol",
         placeholder="e.g. Reliance Industries, TCS, INFY.NS, AAPL",

@@ -1,11 +1,4 @@
-"""
-database/database.py
 
-A thin, generic data-access layer built on top of database/connection.py.
-Feature modules (authentication, portfolio, etc. in later phases) should
-use DatabaseManager instead of talking to SQLAlchemy sessions directly,
-so that error handling and logging stay consistent everywhere.
-"""
 
 from typing import Any, TypeVar
 
@@ -26,9 +19,8 @@ class DatabaseManager:
     def __init__(self) -> None:
         self._db = db_connection
 
-    # ------------------------------------------------------
     # Create
-    # ------------------------------------------------------
+
     def add(self, instance: ModelType) -> ModelType:
         """Insert a single ORM instance and return it (with its generated PK)."""
         try:
@@ -45,9 +37,8 @@ class DatabaseManager:
             logger.error(f"Failed to add record: {exc}")
             raise DatabaseQueryError(str(exc)) from exc
 
-    # ------------------------------------------------------
     # Read
-    # ------------------------------------------------------
+
     def get_by_id(self, model: type[ModelType], record_id: Any, pk_column: str) -> ModelType:
         """Fetch a single record by primary key, raising if not found."""
         try:
@@ -88,9 +79,9 @@ class DatabaseManager:
             logger.error(f"Failed to fetch record by filter: {exc}")
             raise DatabaseQueryError(str(exc)) from exc
 
-    # ------------------------------------------------------
+
     # Update
-    # ------------------------------------------------------
+
     def update(self, model: type[ModelType], record_id: Any, pk_column: str, updates: dict[str, Any]) -> ModelType:
         """Apply a dict of column updates to a record identified by primary key."""
         try:
@@ -112,9 +103,9 @@ class DatabaseManager:
             logger.error(f"Failed to update record: {exc}")
             raise DatabaseQueryError(str(exc)) from exc
 
-    # ------------------------------------------------------
+
     # Delete
-    # ------------------------------------------------------
+
     def delete(self, model: type[ModelType], record_id: Any, pk_column: str) -> None:
         """Delete a record identified by primary key."""
         try:

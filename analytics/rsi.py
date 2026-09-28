@@ -1,10 +1,4 @@
-"""
-analytics/rsi.py
 
-Purpose: Implements the Relative Strength Index (RSI) using Wilder's
-smoothing method, plus a dedicated Plotly panel with overbought (70)
-/ oversold (30) reference lines and a derived BUY/SELL/NEUTRAL signal.
-"""
 
 import pandas as pd
 import plotly.graph_objects as go

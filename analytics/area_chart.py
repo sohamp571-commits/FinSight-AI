@@ -1,11 +1,4 @@
-"""
-analytics/area_chart.py
 
-Purpose: Builds a gradient-filled area chart of closing price --
-visually distinct from line_chart.py's plain line, colored green/red
-based on the period's overall direction (first vs. last close), matching
-the "Area Chart" requirement for multiple chart type options.
-"""
 
 import pandas as pd
 import plotly.graph_objects as go

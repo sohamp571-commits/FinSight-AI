@@ -1,13 +1,4 @@
-"""
-database/alert_service.py
 
-Purpose: Data-layer service for the `alerts` table -- user-defined
-price/percent-change alerts. Provides CRUD plus activate/deactivate
-and trigger-evaluation helpers; the actual background job that polls
-prices and fires alerts belongs to a later phase (likely alongside
-market_cache_service and a scheduler), but the evaluation logic lives
-here since it's pure data-layer arithmetic.
-"""
 
 from datetime import datetime
 from typing import Any
@@ -26,9 +17,8 @@ class AlertService(BaseService[Alert]):
     model = Alert
     pk_column = "alert_id"
 
-    # ------------------------------------------------------
     # Create
-    # ------------------------------------------------------
+
     def create_alert(self, user_id: int, ticker_symbol: str, condition_type: str, target_value: float) -> Alert:
         """Create a new price/percent-change alert for a user."""
         valid_conditions = {item.value for item in AlertCondition}
@@ -48,9 +38,7 @@ class AlertService(BaseService[Alert]):
         logger.info(f"Alert created: user_id={user_id}, ticker={entry.ticker_symbol}, condition={condition_type}")
         return created
 
-    # ------------------------------------------------------
     # Update
-    # ------------------------------------------------------
     def update_alert(self, alert_id: int, condition_type: str, target_value: float) -> Alert:
         """Update the condition and/or target value of an existing alert (resets trigger state)."""
         valid_conditions = {item.value for item in AlertCondition}
@@ -70,9 +58,8 @@ class AlertService(BaseService[Alert]):
         logger.info(f"Alert updated: alert_id={alert_id}")
         return updated
 
-    # ------------------------------------------------------
     # Activate / Deactivate
-    # ------------------------------------------------------
+
     def activate(self, alert_id: int) -> Alert:
         """Re-enable an alert so it will be evaluated again."""
         return self.update(alert_id, {"is_active": True})
@@ -81,17 +68,15 @@ class AlertService(BaseService[Alert]):
         """Disable an alert without deleting it."""
         return self.update(alert_id, {"is_active": False})
 
-    # ------------------------------------------------------
     # Delete
-    # ------------------------------------------------------
+
     def delete_alert(self, alert_id: int) -> None:
         """Permanently remove an alert."""
         self.delete(alert_id)
         logger.info(f"Alert deleted: alert_id={alert_id}")
 
-    # ------------------------------------------------------
     # Read
-    # ------------------------------------------------------
+
     def get_user_alerts(
         self, user_id: int, active_only: bool = False, page: int = 1, page_size: int = 50
     ) -> dict[str, Any]:
@@ -108,9 +93,8 @@ class AlertService(BaseService[Alert]):
         )
         return [alert for alert in result["items"] if not alert.is_triggered]
 
-    # ------------------------------------------------------
     # Trigger Evaluation
-    # ------------------------------------------------------
+
     def evaluate_and_trigger(self, alert: Alert, current_price: float, previous_close: float | None = None) -> bool:
         """
         Evaluate a single alert against a current price and mark it

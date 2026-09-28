@@ -323,6 +323,90 @@ class SearchHistory(Base):
 
 
 # ==========================================================
+# virtual_accounts  (Phase 13 addition)
+# --------------------------------------------------------
+# Needed for the Virtual Trading / Paper Trading module: one row per
+# user tracking virtual cash balance and starting capital, entirely
+# independent of the user's real `portfolio` holdings. Kept as its
+# own table (rather than a `settings` column) because it needs its
+# own audit trail and a `reset_at` timestamp for the "safe reset
+# virtual account" feature.
+# ==========================================================
+class VirtualAccount(Base):
+    __tablename__ = "virtual_accounts"
+
+    virtual_account_id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.user_id", ondelete="CASCADE"), unique=True, nullable=False
+    )
+    initial_capital: Mapped[float] = mapped_column(DECIMAL(18, 4), nullable=False, default=1_000_000.0)
+    cash_balance: Mapped[float] = mapped_column(DECIMAL(18, 4), nullable=False, default=1_000_000.0)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
+    reset_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    user: Mapped["User"] = relationship()
+
+
+# ==========================================================
+# virtual_holdings  (Phase 13 addition)
+# --------------------------------------------------------
+# Mirrors the `Portfolio` model's shape exactly (user_id,
+# ticker_symbol, quantity, average_buy_price, timestamps), but holds
+# paper-trading positions instead of real ones. Kept as a fully
+# separate table from `portfolio` (rather than an `is_virtual` flag
+# on the real table) so real and virtual holdings can never mix in a
+# query that forgets to filter.
+# ==========================================================
+class VirtualHolding(Base):
+    __tablename__ = "virtual_holdings"
+    __table_args__ = (UniqueConstraint("user_id", "ticker_symbol", name="uq_virtual_holdings_user_ticker"),)
+
+    virtual_holding_id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
+    ticker_symbol: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
+    quantity: Mapped[float] = mapped_column(DECIMAL(18, 4), nullable=False, default=0)
+    average_buy_price: Mapped[float] = mapped_column(DECIMAL(18, 4), nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
+
+    user: Mapped["User"] = relationship()
+
+
+# ==========================================================
+# virtual_transactions  (Phase 13 addition)
+# --------------------------------------------------------
+# Mirrors the `Transaction` model's shape exactly (the permanent,
+# append-only BUY/SELL ledger), but for paper trades. Kept separate
+# from `transactions` so realized P&L replay, audit history, and
+# account reset all operate on an isolated ledger that never touches
+# real trading history. Adds `cash_balance_after` (not present on
+# `Transaction`, which has no concept of a cash balance) so each
+# virtual trade's running cash effect is preserved for
+# statements/audit without recomputation.
+# ==========================================================
+class VirtualTransaction(Base):
+    __tablename__ = "virtual_transactions"
+
+    virtual_transaction_id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
+    ticker_symbol: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
+    transaction_type: Mapped[str] = mapped_column(String(4), nullable=False)  # BUY / SELL
+    quantity: Mapped[float] = mapped_column(DECIMAL(18, 4), nullable=False)
+    price_per_unit: Mapped[float] = mapped_column(DECIMAL(18, 4), nullable=False)
+    total_amount: Mapped[float] = mapped_column(DECIMAL(18, 4), nullable=False)
+    cash_balance_after: Mapped[float] = mapped_column(DECIMAL(18, 4), nullable=False)
+    transaction_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    notes: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    user: Mapped["User"] = relationship()
+
+
+# ==========================================================
 # ipo_listings  (Phase 8 addition)
 # --------------------------------------------------------
 # Needed because no Phase 1-7 table stores IPO calendar data (issue

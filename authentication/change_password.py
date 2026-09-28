@@ -1,11 +1,4 @@
-"""
-authentication/change_password.py
 
-Purpose: Streamlit page for an already-authenticated user to change
-their password by confirming their current one. Distinct from
-reset_password.py, which is for logged-out users using an emailed
-token.
-"""
 
 import streamlit as st
 

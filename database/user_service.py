@@ -1,19 +1,4 @@
-"""
-database/user_service.py
 
-Purpose: Data-layer service for the `users` table. Provides generic
-CRUD (inherited from BaseService) plus user-specific lookups
-(find_by_email, find_by_username), soft-delete/restore, and profile
-helpers.
-
-Note: This module is intentionally decoupled from the `authentication`
-package (no import of password hashing here) to avoid a circular
-dependency -- `authentication.auth_service` sits ABOVE this service
-and is responsible for hashing passwords before calling `create_user`.
-Anything that just needs "give me / update a user record" (e.g. the
-dashboard, admin panel) can use UserService directly instead of going
-through the auth layer.
-"""
 
 from datetime import datetime
 from typing import Any

@@ -1,11 +1,4 @@
-"""
-analytics/bollinger_bands.py
 
-Purpose: Implements Bollinger Bands (middle SMA, upper/lower bands at
-+/- N standard deviations) plus a dedicated overlay chart and a
-price-position-based BUY/SELL/NEUTRAL signal. Reuses
-`moving_average.calculate_sma`.
-"""
 
 import pandas as pd
 import plotly.graph_objects as go

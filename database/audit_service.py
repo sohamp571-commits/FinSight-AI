@@ -1,19 +1,9 @@
-"""
-database/audit_service.py
 
-Purpose: Data-layer service for the `audit_logs` table -- a
-write-heavy, append-mostly log of security/business-relevant actions
-(login, password change, profile update, admin actions, etc.), used
-for compliance and troubleshooting. Distinct from loguru's
-application logs (logging_config.py): audit_logs is structured,
-queryable, and tied to specific user/entity records.
-"""
 
 from typing import Any
 
 from custom_exceptions import DatabaseQueryError
 from database.base_service import BaseService
-from database.connection import db_connection
 from database.models import AuditLog
 from logging_config import logger
 

@@ -1,12 +1,3 @@
-"""
-analytics/support_resistance.py
-
-Purpose: Detects support and resistance price levels using a
-fractal/pivot approach (a bar is a local high/low if it's more
-extreme than `window` bars on either side), then clusters nearby
-pivots into a small set of significant levels for charting and
-signal generation.
-"""
 
 import pandas as pd
 import plotly.graph_objects as go

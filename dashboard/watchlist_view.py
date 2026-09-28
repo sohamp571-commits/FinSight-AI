@@ -15,6 +15,7 @@ from authentication.middleware import login_required
 from authentication.session_manager import get_current_user_id
 from custom_exceptions import FinSightBaseException
 from dashboard.dashboard_layout import inject_dashboard_css, render_divider, render_empty_state, render_section_header
+from dashboard.dashboard_widgets import select_stock_and_navigate
 from dashboard.market_data_service import fetch_quotes_bulk
 from database.watchlist_service import watchlist_service
 from helper import format_currency, format_percentage
@@ -56,7 +57,9 @@ def render() -> None:
         for entry in entries:
             quote = quotes.get(entry.ticker_symbol)
             cols = st.columns([2, 2, 2, 2, 1])
-            cols[0].markdown(f"**{entry.ticker_symbol}**")
+            with cols[0]:
+                if st.button(entry.ticker_symbol, key=f"watchlist_ticker_{entry.watchlist_id}", use_container_width=True):
+                    select_stock_and_navigate(entry.ticker_symbol)
 
             if quote is None:
                 cols[1].write("N/A")

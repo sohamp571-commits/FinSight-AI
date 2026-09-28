@@ -15,6 +15,7 @@ from authentication.middleware import login_required
 from authentication.session_manager import get_current_user_id
 from custom_exceptions import FinSightBaseException
 from dashboard.dashboard_layout import inject_dashboard_css, render_divider, render_section_header
+from dashboard.dashboard_widgets import select_stock_and_navigate
 from database.audit_service import audit_service
 from helper import format_datetime
 from logging_config import logger
@@ -25,7 +26,6 @@ from market_intelligence.global_market_news import render_global_market_news
 from market_intelligence.ipo_calendar import render_ipo_calendar
 from market_intelligence.ipo_details import render_ipo_details
 from market_intelligence.ipo_subscription import render_ipo_subscription_status
-from market_intelligence.news_classifier import detect_trending_stocks
 from market_intelligence.news_service import (
     get_ai_news_summary,
     get_breaking_news,
@@ -33,7 +33,6 @@ from market_intelligence.news_service import (
     get_trending_stocks,
 )
 from market_intelligence.notification_service import (
-    archive_notification,
     delete_notification,
     get_notifications,
     get_preferences,
@@ -64,6 +63,8 @@ def _render_live_market_news() -> None:
 
 
 def _render_company_news_tab() -> None:
+    if "selected_stock" in st.session_state:
+        st.session_state["mi_company_query"] = st.session_state.pop("selected_stock")
     query = st.text_input("🔍 Company name or ticker", placeholder="e.g. TCS, Reliance Industries", key="mi_company_query")
     if not query.strip():
         st.caption("Search for a company to see its news.")
@@ -95,6 +96,13 @@ def _render_trending() -> None:
         st.info("No trending data available right now.")
         return
     st.dataframe([{"Ticker": t, "Article Count": c} for t, c in trending], use_container_width=True, hide_index=True)
+
+    st.caption("Click a ticker to open its full analysis in Stock Search:")
+    ticker_columns = st.columns(min(len(trending), 5))
+    for index, (ticker, _count) in enumerate(trending):
+        with ticker_columns[index % len(ticker_columns)]:
+            if st.button(ticker, key=f"news_trending_{ticker}", use_container_width=True):
+                select_stock_and_navigate(ticker)
 
 
 def _render_ai_summary() -> None:

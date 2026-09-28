@@ -1,12 +1,3 @@
-"""
-database/settings_service.py
-
-Purpose: Data-layer service for the `settings` table -- one row per
-user holding their theme, default currency, and notification
-preferences. `get_or_create` is the primary entry point since every
-user should have exactly one settings row, created lazily on first
-access rather than at registration time (keeps auth_service focused).
-"""
 
 from custom_exceptions import ValidationError
 from database.base_service import BaseService

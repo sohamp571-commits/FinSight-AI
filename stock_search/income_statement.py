@@ -44,6 +44,20 @@ def get_income_statement(ticker: str, quarterly: bool = False) -> pd.DataFrame |
     return None
 
 
+def get_latest_statement_value(statement: pd.DataFrame | None, row_name: str) -> float | None:
+    """
+    Safely pull the most recent period's value for a given row label from
+    any financial statement DataFrame (income statement, balance sheet,
+    or cash flow -- all share the same ticker-column/date-row shape).
+    Shared by stock_comparison.py and fundamental_analysis.py so this
+    lookup logic exists in exactly one place.
+    """
+    if statement is None or row_name not in statement.index:
+        return None
+    series = statement.loc[row_name].dropna()
+    return float(series.iloc[0]) if not series.empty else None
+
+
 def render_income_statement(ticker: str) -> None:
     """Render the Income Statement tab: an annual/quarterly toggle plus a formatted table."""
     render_section_header("Income Statement", icon="🧾")

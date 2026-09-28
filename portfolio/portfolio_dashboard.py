@@ -17,8 +17,9 @@ from authentication.session_manager import get_current_user_id
 from custom_exceptions import FinSightBaseException, ValidationError
 from dashboard.chart_helpers import CHART_CONFIG
 from dashboard.dashboard_layout import inject_dashboard_css, render_divider, render_section_header
+from dashboard.dashboard_widgets import select_stock_and_navigate
 from database.audit_service import audit_service
-from helper import format_currency, format_percentage
+from helper import format_currency, format_datetime, format_percentage
 from logging_config import logger
 
 from portfolio.allocation_analysis import compute_asset_allocation
@@ -32,6 +33,7 @@ from portfolio.charts import (
 from portfolio.dividend_tracker import estimate_portfolio_dividends
 from portfolio.portfolio_calculator import compute_portfolio_overview, rank_holdings_by_performance
 from portfolio.portfolio_optimizer import generate_rebalancing_suggestions
+from portfolio.realized_pnl import compute_realized_pnl
 from portfolio.portfolio_service import (
     get_live_quotes_for_holdings,
     get_portfolio_summary_live,
@@ -52,24 +54,51 @@ _RECOMMENDATION_ICON = {"BUY MORE": "🟢", "HOLD": "🟡", "CONSIDER SELLING": 
 # ==========================================================
 def _render_overview_tab(user_id: int) -> None:
     overview = compute_portfolio_overview(user_id)
+    realized = compute_realized_pnl(user_id)
 
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
         st.metric("Total Investment", format_currency(overview.total_investment, "₹"))
     with col2:
         st.metric("Current Value", format_currency(overview.current_value, "₹"))
     with col3:
         st.metric(
-            "Total P&L",
+            "Unrealized P&L",
             format_currency(overview.total_profit_loss, "₹"),
             delta=format_percentage(overview.total_profit_loss_pct),
+            help="Profit/loss on positions you currently hold, marked to live market price.",
         )
     with col4:
+        st.metric(
+            "Realized P&L",
+            format_currency(realized.total_realized_pnl, "₹"),
+            help="Profit/loss actually locked in by past sales, computed from your full transaction history.",
+        )
+    with col5:
         st.metric(
             "Today's Gain/Loss",
             format_currency(overview.todays_gain_loss, "₹"),
             delta=format_percentage(overview.todays_gain_loss_pct),
         )
+
+    if realized.entries:
+        with st.expander(f"📜 Realized P&L Detail ({len(realized.entries)} sale(s))"):
+            st.dataframe(
+                [
+                    {
+                        "Ticker": e.ticker,
+                        "Sold On": format_datetime(e.sell_date),
+                        "Qty Sold": e.quantity_sold,
+                        "Sell Price": format_currency(e.sell_price, "₹"),
+                        "Avg. Cost at Sale": format_currency(e.average_cost_at_sale, "₹"),
+                        "Realized P&L": format_currency(e.realized_pnl, "₹"),
+                        "Realized P&L %": format_percentage(e.realized_pnl_pct),
+                    }
+                    for e in realized.entries
+                ],
+                use_container_width=True,
+                hide_index=True,
+            )
 
     render_divider()
 
@@ -78,13 +107,21 @@ def _render_overview_tab(user_id: int) -> None:
     with col1:
         st.markdown("**🏆 Top Winner**")
         if top_winner:
-            st.write(f"{top_winner['ticker_symbol']} — {format_percentage(top_winner['profit_loss_pct'])}")
+            if st.button(
+                f"{top_winner['ticker_symbol']} — {format_percentage(top_winner['profit_loss_pct'])}",
+                key="top_winner_button", use_container_width=True,
+            ):
+                select_stock_and_navigate(top_winner["ticker_symbol"])
         else:
             st.caption("No holdings yet.")
     with col2:
         st.markdown("**📉 Top Loser**")
         if top_loser:
-            st.write(f"{top_loser['ticker_symbol']} — {format_percentage(top_loser['profit_loss_pct'])}")
+            if st.button(
+                f"{top_loser['ticker_symbol']} — {format_percentage(top_loser['profit_loss_pct'])}",
+                key="top_loser_button", use_container_width=True,
+            ):
+                select_stock_and_navigate(top_loser["ticker_symbol"])
         else:
             st.caption("No holdings yet.")
 
@@ -101,6 +138,7 @@ def _render_overview_tab(user_id: int) -> None:
                 "Qty": h["quantity"],
                 "Avg. Buy Price": format_currency(h["average_buy_price"], "₹"),
                 "Current Price": format_currency(h["current_price"], "₹"),
+                "Invested Value": format_currency(h["invested_value"], "₹"),
                 "Current Value": format_currency(h["current_value"], "₹"),
                 "P&L": format_currency(h["profit_loss"], "₹"),
                 "P&L %": format_percentage(h["profit_loss_pct"]),
@@ -108,6 +146,13 @@ def _render_overview_tab(user_id: int) -> None:
             for h in ranked
         ]
         st.dataframe(rows, use_container_width=True, hide_index=True)
+
+        st.caption("Click a ticker to open its full analysis in Stock Search:")
+        ticker_columns = st.columns(min(len(ranked), 6))
+        for index, holding in enumerate(ranked):
+            with ticker_columns[index % len(ticker_columns)]:
+                if st.button(holding["ticker_symbol"], key=f"holding_ticker_{holding['ticker_symbol']}", use_container_width=True):
+                    select_stock_and_navigate(holding["ticker_symbol"])
 
     render_divider()
     _render_transaction_form(user_id)
@@ -289,6 +334,8 @@ def _render_recommendations_tab(user_id: int) -> None:
         with st.expander(f"{icon} {rec.ticker} — {rec.overall_recommendation}"):
             for line in rec.reasoning:
                 st.write(f"• {line}")
+            if st.button(f"🔍 View {rec.ticker} in Stock Search", key=f"recommendation_ticker_{rec.ticker}", use_container_width=True):
+                select_stock_and_navigate(rec.ticker)
 
 
 # ==========================================================

@@ -1,13 +1,3 @@
-"""
-authentication/session_manager.py
-
-Purpose: Owns all reads/writes to Streamlit's `st.session_state` for
-authentication concerns (current user, role, session expiry, "remember
-me" token). Streamlit has no server-side session store, so this module
-is the single place that defines what "being logged in" means for the
-rest of the app -- every other module should go through here instead
-of touching st.session_state directly.
-"""
 
 from datetime import datetime, timedelta
 from typing import Any

@@ -1,11 +1,3 @@
-"""
-analytics/adx.py
-
-Purpose: Implements the Average Directional Index (ADX) along with its
-component +DI/-DI lines, using Wilder's smoothing -- the standard
-trend-strength (not direction) indicator. Reuses `atr.calculate_true_range`
-rather than recomputing True Range.
-"""
 
 import pandas as pd
 import plotly.graph_objects as go

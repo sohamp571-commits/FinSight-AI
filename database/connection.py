@@ -1,10 +1,4 @@
-"""
-database/connection.py
 
-Owns the SQLAlchemy Engine and session factory for the whole project.
-Every other module should obtain a session via `get_session()` (a
-context manager) rather than creating its own engine.
-"""
 
 from contextlib import contextmanager
 from typing import Generator
@@ -20,13 +14,7 @@ from logging_config import logger
 
 
 class DatabaseConnection:
-    """
-    Wraps a single SQLAlchemy Engine + sessionmaker for the application.
 
-    Implemented as a lazily-initialized singleton so that only one
-    connection pool is ever created per process, no matter how many
-    modules import this class.
-    """
 
     _instance: "DatabaseConnection | None" = None
     _engine: Engine | None = None

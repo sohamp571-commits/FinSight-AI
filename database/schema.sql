@@ -1,7 +1,4 @@
--- ==========================================================
 -- FinSight AI - MySQL 8.0 Schema
--- Phase 1: Foundation tables only.
--- Charset: utf8mb4 | Engine: InnoDB | Timestamps on every table.
 -- ==========================================================
 
 CREATE DATABASE IF NOT EXISTS finsight_ai
@@ -305,6 +302,70 @@ CREATE TABLE IF NOT EXISTS notification_preferences (
     updated_at                                 DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT uq_notification_prefs_user UNIQUE (user_id),
     CONSTRAINT fk_notification_prefs_user FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+-- ==========================================================
+-- virtual_accounts  (Phase 13 addition)
+-- --------------------------------------------------------
+-- One row per user: tracks virtual cash balance and starting
+-- capital for the Virtual Trading / Paper Trading module, entirely
+-- independent of the user's real `portfolio` holdings.
+-- ==========================================================
+CREATE TABLE IF NOT EXISTS virtual_accounts (
+    virtual_account_id  BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id              BIGINT        NOT NULL,
+    initial_capital       DECIMAL(18,4) NOT NULL DEFAULT 1000000.0000,
+    cash_balance            DECIMAL(18,4) NOT NULL DEFAULT 1000000.0000,
+    created_at                DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at                 DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    reset_at                    DATETIME      NULL,
+    CONSTRAINT uq_virtual_accounts_user UNIQUE (user_id),
+    CONSTRAINT fk_virtual_accounts_user FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- ==========================================================
+-- virtual_holdings  (Phase 13 addition)
+-- --------------------------------------------------------
+-- Mirrors `portfolio`'s shape exactly, but holds paper-trading
+-- positions instead of real ones.
+-- ==========================================================
+CREATE TABLE IF NOT EXISTS virtual_holdings (
+    virtual_holding_id  BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id              BIGINT        NOT NULL,
+    ticker_symbol         VARCHAR(20)   NOT NULL,
+    quantity               DECIMAL(18,4) NOT NULL DEFAULT 0,
+    average_buy_price       DECIMAL(18,4) NOT NULL DEFAULT 0,
+    created_at                DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at                 DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT uq_virtual_holdings_user_ticker UNIQUE (user_id, ticker_symbol),
+    CONSTRAINT fk_virtual_holdings_user FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE,
+    INDEX idx_virtual_holdings_ticker (ticker_symbol)
+) ENGINE=InnoDB;
+
+-- ==========================================================
+-- virtual_transactions  (Phase 13 addition)
+-- --------------------------------------------------------
+-- Mirrors `transactions`'s shape exactly (the permanent, append-only
+-- BUY/SELL ledger), but for paper trades. Kept separate so realized
+-- P&L replay, audit history, and reset all operate on an isolated
+-- ledger that never touches real trading history. Adds
+-- `cash_balance_after` (not present on `transactions`, which has no
+-- concept of a cash balance) so each virtual trade's running cash
+-- effect is preserved for statements/audit without recomputation.
+-- ==========================================================
+CREATE TABLE IF NOT EXISTS virtual_transactions (
+    virtual_transaction_id  BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id                  BIGINT        NOT NULL,
+    ticker_symbol             VARCHAR(20)   NOT NULL,
+    transaction_type           ENUM('BUY','SELL') NOT NULL,
+    quantity                     DECIMAL(18,4) NOT NULL,
+    price_per_unit                 DECIMAL(18,4) NOT NULL,
+    total_amount                     DECIMAL(18,4) NOT NULL,
+    cash_balance_after                 DECIMAL(18,4) NOT NULL,
+    transaction_date                     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    notes                                  VARCHAR(255)  NULL,
+    CONSTRAINT fk_virtual_transactions_user FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE,
+    INDEX idx_virtual_transactions_ticker (ticker_symbol),
+    INDEX idx_virtual_transactions_user_date (user_id, transaction_date)
 ) ENGINE=InnoDB;
 
 -- ==========================================================

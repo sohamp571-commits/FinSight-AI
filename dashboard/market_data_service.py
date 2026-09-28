@@ -90,13 +90,30 @@ _MAX_RETRIES = 3
 _RETRY_DELAY_SECONDS = 1.5
 _CACHE_TTL_SECONDS = 60
 
+# Errors that indicate a missing/malformed field in yfinance's response
+# (e.g. the known "KeyError: exchangeTimezoneName" issue some tickers hit)
+# are structural, not transient -- retrying identical requests cannot fix
+# a field that Yahoo simply didn't return. Retrying only wastes
+# _MAX_RETRIES * _RETRY_DELAY_SECONDS (~4.5s) per failed ticker for no
+# benefit. Only genuinely transient failures (network hiccups, timeouts,
+# rate limiting) are worth retrying.
+_NON_TRANSIENT_EXCEPTIONS: tuple[type[Exception], ...] = (KeyError, TypeError, AttributeError)
+
 
 def _retry(callable_fn, *args, **kwargs) -> Any:
-    """Call `callable_fn` with simple exponential-backoff retry on failure."""
+    """
+    Call `callable_fn` with simple exponential-backoff retry on failure.
+    Fails fast (no retry) on structural/data errors that a retry cannot
+    fix (see `_NON_TRANSIENT_EXCEPTIONS`); retries everything else
+    (network timeouts, rate limiting, etc.) up to `_MAX_RETRIES` times.
+    """
     last_exc: Exception | None = None
     for attempt in range(1, _MAX_RETRIES + 1):
         try:
             return callable_fn(*args, **kwargs)
+        except _NON_TRANSIENT_EXCEPTIONS as exc:
+            logger.warning(f"Non-transient market data error (failing fast, no retry): {exc}")
+            raise ExternalAPIError(f"Failed to fetch market data: {exc}") from exc
         except Exception as exc:  # noqa: BLE001 - yfinance raises assorted exception types
             last_exc = exc
             logger.warning(f"Market data fetch attempt {attempt}/{_MAX_RETRIES} failed: {exc}")
@@ -111,16 +128,21 @@ def fetch_quote(ticker: str) -> dict[str, Any] | None:
     """
     Fetch a single ticker's latest quote.
 
+    Tries the fast `fast_info` path first; if that fails (e.g. the
+    known yfinance `KeyError: exchangeTimezoneName` issue some tickers
+    trigger), falls back to deriving the same quote shape from 2-day
+    OHLC history before giving up entirely.
+
     Returns:
         {
             "ticker": str, "price": float, "previous_close": float,
             "change": float, "change_pct": float, "volume": int,
             "day_high": float, "day_low": float,
         }
-        or None if the ticker could not be fetched after retries.
+        or None if the ticker could not be fetched after retries and fallback.
     """
     try:
-        def _fetch() -> dict[str, Any]:
+        def _fetch_fast_info() -> dict[str, Any]:
             info = yf.Ticker(ticker).fast_info
             price = float(info["last_price"])
             previous_close = float(info["previous_close"])
@@ -137,9 +159,38 @@ def fetch_quote(ticker: str) -> dict[str, Any] | None:
                 "day_low": float(info.get("day_low") or price),
             }
 
-        return _retry(_fetch)
+        return _retry(_fetch_fast_info)
     except ExternalAPIError as exc:
-        logger.error(f"fetch_quote failed for {ticker}: {exc}")
+        logger.warning(f"fast_info fetch failed for {ticker}, trying history-based fallback: {exc}")
+        return _fetch_quote_from_history(ticker)
+
+
+def _fetch_quote_from_history(ticker: str) -> dict[str, Any] | None:
+    """Fallback quote source: derive the same quote shape from short OHLC history when fast_info fails."""
+    try:
+        def _fetch_history() -> dict[str, Any]:
+            history = yf.Ticker(ticker).history(period="5d", interval="1d")
+            if history.empty or len(history) < 2:
+                raise ExternalAPIError(f"No fallback history available for {ticker}.")
+            closes = history["Close"].dropna()
+            price = float(closes.iloc[-1])
+            previous_close = float(closes.iloc[-2])
+            change = price - previous_close
+            change_pct = (change / previous_close * 100) if previous_close else 0.0
+            return {
+                "ticker": ticker,
+                "price": price,
+                "previous_close": previous_close,
+                "change": change,
+                "change_pct": change_pct,
+                "volume": int(history["Volume"].dropna().iloc[-1]) if not history["Volume"].dropna().empty else 0,
+                "day_high": float(history["High"].iloc[-1]),
+                "day_low": float(history["Low"].iloc[-1]),
+            }
+
+        return _retry(_fetch_history)
+    except ExternalAPIError as exc:
+        logger.error(f"fetch_quote failed for {ticker} (fast_info and history fallback both failed): {exc}")
         return None
 
 
@@ -207,7 +258,13 @@ def fetch_quotes_bulk(tickers: tuple[str, ...]) -> dict[str, dict[str, Any]]:
 
 @st.cache_data(ttl=300, show_spinner=False)
 def fetch_price_history(ticker: str, period: str = "1mo", interval: str = "1d") -> pd.DataFrame | None:
-    """Fetch OHLCV price history for a ticker (used by charts)."""
+    """
+    Fetch OHLCV price history for a ticker (used by charts).
+
+    If the requested `period`/`interval` combination returns empty data
+    (can happen for newly-listed tickers or unusual interval/period
+    pairs), falls back to a safe 5-day/daily request before giving up.
+    """
     try:
         def _fetch() -> pd.DataFrame:
             history = yf.Ticker(ticker).history(period=period, interval=interval)
@@ -217,6 +274,9 @@ def fetch_price_history(ticker: str, period: str = "1mo", interval: str = "1d") 
 
         return _retry(_fetch)
     except ExternalAPIError as exc:
+        if period != "5d" or interval != "1d":
+            logger.warning(f"fetch_price_history fell back to 5d/1d for {ticker} after: {exc}")
+            return fetch_price_history(ticker, period="5d", interval="1d")
         logger.error(f"fetch_price_history failed for {ticker}: {exc}")
         return None
 

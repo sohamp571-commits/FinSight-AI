@@ -1,11 +1,4 @@
-"""
-authentication/auth_service.py
 
-Purpose: The single service class that all Streamlit auth pages call
-into. Owns the actual business logic for registration, login,
-password reset, profile updates, and soft-delete -- keeping the UI
-files (login.py, register.py, ...) thin and focused on presentation.
-"""
 
 from datetime import datetime
 
@@ -17,7 +10,6 @@ from custom_exceptions import (
     AuthenticationError,
     DatabaseQueryError,
     DuplicateRecordError,
-    RecordNotFoundError,
     ValidationError,
 )
 from database.connection import db_connection
@@ -32,22 +24,20 @@ from authentication.password_utils import (
     hash_reset_token,
     is_token_expired,
 )
-from authentication.role_manager import get_default_role, get_role_by_name
+from authentication.role_manager import get_default_role
 from authentication.validators import (
     validate_email_field,
     validate_full_name,
     validate_password_field,
     validate_registration_form,
-    validate_username_field,
 )
 
 
 class AuthService:
     """Encapsulates every authentication and user-management use case."""
 
-    # ------------------------------------------------------
     # Registration
-    # ------------------------------------------------------
+
     @staticmethod
     def register_user(full_name: str, email: str, username: str, password: str, confirm_password: str) -> User:
         """
@@ -81,9 +71,8 @@ class AuthService:
         logger.info(f"New user registered: username={created_user.username}")
         return created_user
 
-    # ------------------------------------------------------
     # Login / Logout
-    # ------------------------------------------------------
+
     @staticmethod
     def authenticate(username_or_email: str, password: str, ip_address: str = "", user_agent: str = "") -> User:
         """
@@ -109,7 +98,7 @@ class AuthService:
 
         if AuthService._is_locked_out(user.user_id):
             raise AuthenticationError(
-                f"Too many failed login attempts. Please try again later or reset your password."
+                "Too many failed login attempts. Please try again later or reset your password."
             )
 
         if not check_password(password, user.password_hash):
@@ -181,9 +170,8 @@ class AuthService:
             logger.error(f"Failed to fetch login history: {exc}")
             raise DatabaseQueryError(str(exc)) from exc
 
-    # ------------------------------------------------------
     # Forgot / Reset Password
-    # ------------------------------------------------------
+
     @staticmethod
     def request_password_reset(email: str) -> str | None:
         """
@@ -236,9 +224,8 @@ class AuthService:
         db_manager.update(PasswordResetToken, token_record.token_id, "token_id", {"is_used": True})
         logger.info(f"Password reset completed for user_id={token_record.user_id}")
 
-    # ------------------------------------------------------
     # Change Password (authenticated user)
-    # ------------------------------------------------------
+
     @staticmethod
     def change_password(user_id: int, current_password: str, new_password: str, confirm_password: str) -> None:
         """
@@ -262,9 +249,8 @@ class AuthService:
         db_manager.update(User, user_id, "user_id", {"password_hash": create_password_hash(new_password)})
         logger.info(f"Password changed for user_id={user_id}")
 
-    # ------------------------------------------------------
     # Profile Management
-    # ------------------------------------------------------
+
     @staticmethod
     def get_profile(user_id: int) -> User:
         """Fetch a user's profile record."""
@@ -311,9 +297,8 @@ class AuthService:
             f"(persisted to disk; DB column pending a future schema decision)."
         )
 
-    # ------------------------------------------------------
     # Account Status / Soft Delete
-    # ------------------------------------------------------
+
     @staticmethod
     def deactivate_account(user_id: int) -> None:
         """Mark a user account as inactive (reversible, unlike soft delete)."""

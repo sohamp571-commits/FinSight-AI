@@ -42,7 +42,9 @@ from machine_learning import prediction_dashboard
 from market_intelligence import news_dashboard
 from portfolio import portfolio_dashboard
 from reports import report_dashboard
+from statistics import statistical_dashboard
 from stock_search import stock_search
+from virtual_trading import trading_dashboard as virtual_trading_dashboard
 
 # ==========================================================
 # Streamlit Page Configuration (must run once, before any other st.* call)
@@ -74,12 +76,14 @@ AUTHENTICATED_PAGES = {
     "market_dashboard": render_market_dashboard,
     "stock_search": stock_search.render,
     "portfolio": portfolio_dashboard.render,
+    "virtual_trading": virtual_trading_dashboard.render,
     "watchlist": watchlist_view.render,
     "technical_analysis": technical_analysis.render,
     "ai_prediction": prediction_dashboard.render,
     "ai_assistant": assistant_dashboard.render,
     "news": news_dashboard.render,
     "reports": report_dashboard.render,
+    "statistics": statistical_dashboard.render,
     "settings": settings_view.render,
     "profile": profile.render,
     "change_password": change_password.render,
@@ -226,12 +230,14 @@ _NAV_ITEMS: list[tuple[str, str, str]] = [
     ("dashboard", "🏠", "Dashboard"),
     ("stock_search", "🔍", "Stock Search"),
     ("portfolio", "💼", "Portfolio"),
+    ("virtual_trading", "🎮", "Virtual Trading"),
     ("watchlist", "⭐", "Watchlist"),
     ("technical_analysis", "📉", "Technical Analysis"),
     ("ai_prediction", "🤖", "AI Prediction"),
     ("ai_assistant", "💬", "AI Assistant"),
     ("news", "📰", "News"),
     ("reports", "📑", "Reports"),
+    ("statistics", "📐", "Statistical Analysis"),
     ("market_dashboard", "🌐", "Market Dashboard"),
 ]
 
@@ -321,19 +327,32 @@ def _render_sidebar() -> None:
 
 def _route() -> None:
     """Decide which page to render based on auth state and nav_target."""
+
+    # Handle deep links
+    page = st.query_params.get("page")
+
+    # Default navigation target
     nav_target = st.session_state.get("nav_target", "login")
+
+    # Process deep links only once
+    if page and not st.session_state.get("deep_link_processed", False):
+        st.session_state["nav_target"] = page
+        nav_target = page
+        st.session_state["deep_link_processed"] = True
 
     if is_authenticated():
         _render_sidebar()
+
         if nav_target not in AUTHENTICATED_PAGES:
-            # Any stale/guest nav_target while logged in falls back to the dashboard.
             nav_target = "dashboard"
+
         AUTHENTICATED_PAGES[nav_target]()
+
     else:
         if nav_target not in GUEST_PAGES:
             nav_target = "login"
-        GUEST_PAGES[nav_target]()
 
+        GUEST_PAGES[nav_target]()
 
 def main() -> None:
     """Application entry point."""

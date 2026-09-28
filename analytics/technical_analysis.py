@@ -1,12 +1,4 @@
-"""
-analytics/technical_analysis.py
 
-Purpose: The main entry point for the Technical Analysis module. Lets
-the user search for a ticker (reusing stock_search's resolution logic),
-pick a timeframe, and explore price via candlestick/line/area charts
-with overlays, every individual indicator panel, support/resistance,
-volume analysis, and the consolidated Buy/Sell/Neutral signal summary.
-"""
 
 import streamlit as st
 
@@ -37,7 +29,16 @@ from stock_search.search_service import resolve_ticker, validate_ticker_exists
 
 
 def _render_ticker_and_timeframe_controls() -> tuple[str | None, str]:
-    """Render the ticker search box and timeframe selector, returning (resolved_ticker, timeframe_label)."""
+    """
+    Render the ticker search box and timeframe selector, returning
+    (resolved_ticker, timeframe_label). If a ticker was selected
+    elsewhere in the app (Dashboard, Watchlist, Portfolio, etc. --
+    anything setting `st.session_state["selected_stock"]`), it's
+    consumed here and pre-fills the search box automatically.
+    """
+    if "selected_stock" in st.session_state:
+        st.session_state["ta_search_query"] = st.session_state.pop("selected_stock")
+
     col1, col2 = st.columns([3, 1])
     with col1:
         query = st.text_input(

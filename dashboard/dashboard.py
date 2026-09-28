@@ -60,7 +60,7 @@ def render() -> None:
         inject_dashboard_css()
 
         full_name = get_current_full_name() or "there"
-        st.title(f"📈 Market Dashboard")
+        st.title("📈 Market Dashboard")
         st.caption(f"Welcome back, {full_name}. Live market data updates automatically every 60 seconds.")
         render_divider()
 

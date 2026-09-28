@@ -42,6 +42,11 @@ DEFAULT_EXCHANGE_SUFFIX: str = ".NS"   # NSE suffix used by yfinance
 SUPPORTED_EXCHANGES: tuple = ("NSE", "BSE", "NASDAQ", "NYSE")
 
 # ==========================================================
+# Virtual Trading / Paper Trading (Phase 13 addition)
+# ==========================================================
+VIRTUAL_TRADING_INITIAL_CAPITAL: float = 1_000_000.0  # Default starting virtual capital (₹10,00,000)
+
+# ==========================================================
 # File / Path Related
 # ==========================================================
 LOG_DIR_NAME: str = "logs"

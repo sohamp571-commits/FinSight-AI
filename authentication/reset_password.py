@@ -8,6 +8,7 @@ via AuthService.reset_password().
 """
 
 import streamlit as st
+import time
 
 from custom_exceptions import AuthenticationError, ValidationError
 from logging_config import logger
@@ -41,7 +42,10 @@ def render() -> None:
             return
         try:
             AuthService.reset_password(token.strip(), new_password, confirm_password)
-            st.success("Your password has been reset successfully. You can now log in.")
+            st.success("✅ Password reset successfully!")
+
+            st.query_params.clear()
+
             st.session_state["nav_target"] = "login"
             st.rerun()
         except AuthenticationError as exc:
@@ -54,5 +58,6 @@ def render() -> None:
 
     st.markdown("---")
     if st.button("Back to Login", use_container_width=True):
+        st.query_params.clear()  # Remove page=reset_password&token=...
         st.session_state["nav_target"] = "login"
         st.rerun()

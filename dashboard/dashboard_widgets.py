@@ -13,6 +13,7 @@ from typing import Any
 import streamlit as st
 
 from dashboard.chart_helpers import build_sparkline
+from dashboard.market_data_service import NIFTY50_UNIVERSE
 from helper import format_currency, format_percentage
 
 
@@ -76,10 +77,59 @@ def render_market_status_badge(is_open: bool, label: str, as_of_str: str) -> Non
     )
 
 
+def build_mover_rows(quotes: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
+    """
+    Convert raw quote dicts into the row shape expected by
+    `render_movers_table`. Shared by top_gainers.py, top_losers.py, and
+    most_active.py so this conversion logic exists in exactly one place
+    instead of being copy-pasted across all three.
+    """
+    return [
+        {
+            "ticker": ticker,
+            "company": NIFTY50_UNIVERSE.get(ticker, ticker),
+            "price": quote["price"],
+            "change": quote["change"],
+            "change_pct": quote["change_pct"],
+            "volume": quote["volume"],
+        }
+        for ticker, quote in quotes.items()
+    ]
+
+
+def select_stock_and_navigate(ticker: str) -> None:
+    """
+    Navigate to Stock Search with a specific ticker pre-loaded. Shared
+    by every clickable-ticker surface in the app (Dashboard movers,
+    Watchlist, Portfolio holdings/recommendations, Trending Stocks) so
+    the click-to-navigate behavior lives in exactly one place.
+    """
+    st.session_state["selected_stock"] = ticker
+    st.session_state["nav_target"] = "stock_search"
+    st.rerun()
+
+
+def render_clickable_ticker(ticker: str, label: str | None = None, key: str | None = None) -> None:
+    """
+    Render a single ticker as a clickable button that navigates to
+    Stock Search with that ticker pre-loaded. `label` defaults to the
+    ticker itself; pass a custom label (e.g. "TCS.NS — Reliance...")
+    for richer display contexts.
+    """
+    display_label = label or ticker
+    button_key = key or f"clickable_ticker_{ticker}_{hash(display_label) % 1_000_000}"
+    if st.button(display_label, key=button_key, use_container_width=True):
+        select_stock_and_navigate(ticker)
+
+
 def render_movers_table(rows: list[dict[str, Any]], empty_message: str = "No data available.") -> None:
     """
     Render a Company / Current Price / Change / Change % / Volume table,
     used identically by top_gainers.py, top_losers.py, and most_active.py.
+    Each row's company/ticker cell is clickable: clicking it sets
+    `st.session_state["selected_stock"]` to that ticker, navigates to
+    Stock Search, and reruns -- letting a user jump straight from a
+    mover list into full company analysis.
 
     Args:
         rows: list of {"company": str, "ticker": str, "price": float,
@@ -93,13 +143,24 @@ def render_movers_table(rows: list[dict[str, Any]], empty_message: str = "No dat
     for col, title in zip(header_cols, ["Company", "Price", "Change", "Change %", "Volume"]):
         col.markdown(f"**{title}**")
 
-    for row in rows:
+    # id(rows) keeps widget keys unique across simultaneous calls on the
+    # same page (e.g. Top Gainers and Top Losers rendered side by side)
+    # without requiring a new parameter or any caller changes.
+    table_id = id(rows)
+
+    for index, row in enumerate(rows):
         is_positive = row["change"] >= 0
         change_color = "#22C55E" if is_positive else "#EF4444"
         arrow = "▲" if is_positive else "▼"
 
         cols = st.columns([3, 2, 2, 2, 2])
-        cols[0].markdown(f"**{row['company']}**  \n<span style='opacity:0.6;'>{row['ticker']}</span>", unsafe_allow_html=True)
+        with cols[0]:
+            if st.button(
+                f"{row['company']} ({row['ticker']})",
+                key=f"mover_row_{table_id}_{index}_{row['ticker']}",
+                use_container_width=True,
+            ):
+                select_stock_and_navigate(row["ticker"])
         cols[1].markdown(format_currency(row["price"], "₹"))
         cols[2].markdown(
             f"<span style='color:{change_color};'>{arrow} {format_currency(abs(row['change']), '₹')}</span>",

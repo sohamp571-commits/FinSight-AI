@@ -1,10 +1,4 @@
-"""
-authentication/register.py
 
-Purpose: Streamlit page for new user registration. Collects full name,
-email, username, and password (with confirmation), performs live
-validation feedback, and creates the account via AuthService.
-"""
 
 import streamlit as st
 

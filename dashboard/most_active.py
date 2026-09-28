@@ -10,28 +10,11 @@ consistency.
 import streamlit as st
 
 from dashboard.dashboard_layout import render_section_header
-from dashboard.dashboard_widgets import render_movers_table
-from dashboard.market_data_service import NIFTY50_UNIVERSE, get_universe_quotes
+from dashboard.dashboard_widgets import build_mover_rows, render_movers_table
+from dashboard.market_data_service import get_universe_quotes
 from logging_config import logger
 
 TOP_N = 10
-
-
-def _build_rows(quotes: dict) -> list[dict]:
-    """Convert raw quote dicts into the row shape expected by render_movers_table."""
-    rows = []
-    for ticker, quote in quotes.items():
-        rows.append(
-            {
-                "ticker": ticker,
-                "company": NIFTY50_UNIVERSE.get(ticker, ticker),
-                "price": quote["price"],
-                "change": quote["change"],
-                "change_pct": quote["change_pct"],
-                "volume": quote["volume"],
-            }
-        )
-    return rows
 
 
 def render_most_active(limit: int = TOP_N) -> None:
@@ -45,6 +28,6 @@ def render_most_active(limit: int = TOP_N) -> None:
         st.info("Most active data is temporarily unavailable.")
         return
 
-    rows = _build_rows(quotes)
+    rows = build_mover_rows(quotes)
     most_active = sorted(rows, key=lambda r: r["volume"], reverse=True)[:limit]
     render_movers_table(most_active, empty_message="No volume data available for the current session.")

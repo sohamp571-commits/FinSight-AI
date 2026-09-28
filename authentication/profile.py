@@ -1,11 +1,4 @@
-"""
-authentication/profile.py
 
-Purpose: Streamlit page for viewing and editing the logged-in user's
-profile: name/email updates, profile picture upload, account status,
-and recent login history. This is the "account home" page most users
-will see after their dashboard.
-"""
 
 from pathlib import Path
 

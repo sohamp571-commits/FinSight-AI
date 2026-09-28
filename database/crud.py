@@ -1,17 +1,4 @@
-"""
-database/crud.py
 
-Purpose: Stateless, generic CRUD primitives that operate on an
-explicit SQLAlchemy Session. These are the lowest-level building
-blocks in the data layer -- they know nothing about business rules,
-only about talking to a given model's table safely and consistently
-(pagination, filtering, searching, sorting, bulk insert).
-
-`base_service.py` wraps these functions with session management
-(commit/rollback/close) and exception translation; concrete services
-(user_service.py, portfolio_service.py, ...) should not call this
-module directly -- they should go through BaseService instead.
-"""
 
 from typing import Any, TypeVar
 

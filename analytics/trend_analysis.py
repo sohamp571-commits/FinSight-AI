@@ -1,13 +1,4 @@
-"""
-analytics/trend_analysis.py
 
-Purpose: Synthesizes a single overall trend read -- direction
-(Uptrend/Downtrend/Sideways) and strength (Strong/Moderate/Weak) --
-by combining moving_average.py's price-vs-MA position with adx.py's
-trend-strength classification, rather than each indicator being read
-in isolation. This is what signal_generator.py and technical_analysis.py
-use for the headline "Trend" readout.
-"""
 
 import pandas as pd
 import streamlit as st

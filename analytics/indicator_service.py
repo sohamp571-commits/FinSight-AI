@@ -1,14 +1,3 @@
-"""
-analytics/indicator_service.py
-
-Purpose: The single data-access point for the Technical Analysis
-module. Fetches multi-timeframe OHLCV data from yfinance (own
-cache/retry, following the exact pattern already used by
-`stock_search/historical_data.py` and every other data-fetching module
-in this project) and exposes the timeframe options used throughout
-`analytics/`. Every indicator/chart module receives a pandas DataFrame
-from here rather than calling yfinance directly.
-"""
 
 import time
 

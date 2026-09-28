@@ -1,12 +1,3 @@
-"""
-database/news_service.py
-
-Purpose: Data-layer service for the `news_cache` table -- stores news
-headlines fetched from NewsAPI along with a sentiment score, so the
-`news` feature module (later phase) doesn't have to hit the external
-API on every page load. This phase provides caching/query primitives
-only; the NewsAPI/TextBlob integration itself belongs to that module.
-"""
 
 from datetime import datetime
 from typing import Any

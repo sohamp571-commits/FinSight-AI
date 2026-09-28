@@ -1,13 +1,3 @@
-"""
-analytics/candlestick_chart.py
-
-Purpose: Builds the primary interactive candlestick chart for the
-Technical Analysis module, with selectable overlays (SMA, EMA,
-Bollinger Bands) drawn directly on top of price. Reuses
-`dashboard.chart_helpers.apply_dark_theme` for consistent styling and
-`bollinger_bands.build_bollinger_overlay` rather than duplicating that
-logic.
-"""
 
 import pandas as pd
 import plotly.graph_objects as go

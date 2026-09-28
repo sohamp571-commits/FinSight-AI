@@ -1,13 +1,4 @@
-"""
-database/report_service.py
 
-Purpose: Data-layer service for the `reports` table -- tracks
-generated PDF/Excel report files (portfolio summaries, prediction
-summaries, transaction history) so users can re-download past reports
-instead of regenerating them. Actual PDF/Excel generation happens in
-the `reports/` feature module in a later phase; this service only
-persists the resulting metadata/file path.
-"""
 
 from typing import Any
 

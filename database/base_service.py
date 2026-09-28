@@ -1,13 +1,3 @@
-"""
-database/base_service.py
-
-Purpose: Generic service base class providing full CRUD (create, read,
-update, delete, bulk insert, pagination, filtering, searching,
-sorting) with proper session/transaction management and exception
-translation. Every domain service (UserService, PortfolioService, ...)
-subclasses BaseService[Model] and adds only its domain-specific
-methods, instead of re-implementing session handling each time.
-"""
 
 from typing import Any, Generic, TypeVar
 
@@ -23,14 +13,7 @@ ModelType = TypeVar("ModelType", bound=Base)
 
 
 class BaseService(Generic[ModelType]):
-    """
-    Generic CRUD service bound to a single SQLAlchemy model.
 
-    Subclasses set `model` and `pk_column` and inherit full CRUD
-    behavior. Every method opens its own session via
-    `db_connection.get_session()`, which commits on success and
-    rolls back automatically on any exception (see connection.py).
-    """
 
     model: type[ModelType]
     pk_column: str = "id"
@@ -40,9 +23,9 @@ class BaseService(Generic[ModelType]):
             raise NotImplementedError("Subclasses of BaseService must define `model`.")
         self._db = db_connection
 
-    # ------------------------------------------------------
+
     # Create
-    # ------------------------------------------------------
+
     def create(self, instance: ModelType) -> ModelType:
         """Insert a single new record."""
         try:
@@ -76,9 +59,8 @@ class BaseService(Generic[ModelType]):
             logger.error(f"Failed to bulk-create {self.model.__name__}: {exc}")
             raise DatabaseQueryError(str(exc)) from exc
 
-    # ------------------------------------------------------
     # Read
-    # ------------------------------------------------------
+
     def get_by_id(self, record_id: Any) -> ModelType:
         """Fetch a single record by primary key, raising if not found."""
         try:
@@ -116,12 +98,7 @@ class BaseService(Generic[ModelType]):
         page: int = 1,
         page_size: int = 25,
     ) -> dict[str, Any]:
-        """
-        Fetch a filtered, searched, sorted, paginated page of records.
 
-        Returns:
-            {"items": [...], "total": int, "page": int, "page_size": int, "total_pages": int}
-        """
         try:
             with self._db.get_session() as session:
                 items = crud.list_records(
@@ -160,9 +137,9 @@ class BaseService(Generic[ModelType]):
             logger.error(f"Failed to count {self.model.__name__}: {exc}")
             raise DatabaseQueryError(str(exc)) from exc
 
-    # ------------------------------------------------------
+
     # Update
-    # ------------------------------------------------------
+
     def update(self, record_id: Any, updates: dict[str, Any]) -> ModelType:
         """Apply a dict of column updates to a record identified by primary key."""
         try:
@@ -182,9 +159,8 @@ class BaseService(Generic[ModelType]):
             logger.error(f"Failed to update {self.model.__name__}: {exc}")
             raise DatabaseQueryError(str(exc)) from exc
 
-    # ------------------------------------------------------
     # Delete
-    # ------------------------------------------------------
+
     def delete(self, record_id: Any) -> None:
         """Hard-delete a record identified by primary key."""
         try:

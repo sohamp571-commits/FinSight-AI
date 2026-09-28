@@ -10,7 +10,7 @@ divorced from price movement is a weaker signal than the two combined.
 
 from dataclasses import dataclass
 
-from dashboard.market_data_service import NIFTY50_UNIVERSE, get_universe_quotes
+from dashboard.market_data_service import get_universe_quotes
 from market_intelligence.news_service import get_live_market_news
 from market_intelligence.sentiment_score import AggregateSentiment, aggregate_sentiment
 

@@ -1,12 +1,4 @@
-"""
-analytics/macd.py
 
-Purpose: Implements the Moving Average Convergence Divergence (MACD)
-indicator -- MACD line (EMA12 - EMA26), signal line (EMA9 of MACD),
-and histogram -- plus a dedicated Plotly panel and a crossover-based
-BUY/SELL/NEUTRAL signal. Reuses `moving_average.calculate_ema` rather
-than re-implementing EMA.
-"""
 
 import pandas as pd
 import plotly.graph_objects as go

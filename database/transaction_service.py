@@ -1,13 +1,3 @@
-"""
-database/transaction_service.py
-
-Purpose: Data-layer service for the `transactions` table -- the
-permanent, append-only buy/sell ledger. Buying or selling a stock must
-also update the corresponding `portfolio` row; to guarantee both
-writes succeed or fail together, `buy_stock`/`sell_stock` use a single
-explicit session (via crud.py) rather than delegating to
-PortfolioService (which would open a second, independent transaction).
-"""
 
 from datetime import datetime
 from typing import Any

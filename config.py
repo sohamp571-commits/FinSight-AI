@@ -90,7 +90,21 @@ class Config:
     # --------------- Security ---------------
     BCRYPT_ROUNDS: int = _get_int_env("BCRYPT_ROUNDS", default=12)
     SESSION_TIMEOUT_MINUTES: int = _get_int_env("SESSION_TIMEOUT_MINUTES", default=60)
+    # --------------- Email / SMTP ---------------
+    SMTP_SERVER: str = _get_env("SMTP_SERVER", default="smtp.gmail.com")
 
+    SMTP_PORT: int = _get_int_env("SMTP_PORT", default=587)
+
+    SMTP_EMAIL: str = _get_env("SMTP_EMAIL", default="")
+
+    SMTP_PASSWORD: str = _get_env("SMTP_PASSWORD", default="")
+
+    FROM_EMAIL: str = _get_env("FROM_EMAIL", default="")
+
+    APP_URL: str = _get_env(
+        "APP_URL",
+        default="http://localhost:8501",
+    )
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
         """Build the MySQL connection string used by SQLAlchemy's create_engine()."""

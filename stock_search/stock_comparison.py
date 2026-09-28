@@ -19,7 +19,7 @@ from dashboard.dashboard_layout import render_section_header
 from helper import format_currency
 from logging_config import logger
 from stock_search.company_profile import get_company_info
-from stock_search.income_statement import get_income_statement
+from stock_search.income_statement import get_income_statement, get_latest_statement_value
 from stock_search.search_service import resolve_ticker, validate_ticker_exists
 from utils import safe_divide
 
@@ -27,10 +27,7 @@ MAX_COMPARISON_TICKERS = 5
 
 
 def _latest(df: pd.DataFrame | None, row_name: str) -> float | None:
-    if df is None or row_name not in df.index:
-        return None
-    series = df.loc[row_name].dropna()
-    return float(series.iloc[0]) if not series.empty else None
+    return get_latest_statement_value(df, row_name)
 
 
 def _build_comparison_row(ticker: str) -> dict[str, Any] | None:
